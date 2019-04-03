@@ -1,0 +1,91 @@
+<%page expression_filter="h"/>
+<%inherit file="main.html" />
+<%def name="online_help_token()"><% return "courseinfo" %></%def>
+<%namespace name='static' file='static_content.html'/>
+<%!
+from datetime import datetime
+from pytz import timezone, utc
+
+from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext as _
+from courseware.courses import get_course_date_blocks
+from openedx.core.djangolib.markup import HTML, Text
+%>
+
+<%block name="pagetitle">${_("{course_number} Course Info").format(course_number=course.display_number_with_default)}</%block>
+
+<%block name="headextra">
+<%static:css group='style-course-vendor'/>
+<%static:css group='style-course'/>
+<link type='text/css' rel='stylesheet' href="${static.url('css/rocketchat-discussion-page.css')}">
+</%block>
+
+<%include file="/courseware/course_navigation.html" args="active_page='rocketchat'" />
+
+<%static:require_module_async module_name="js/courseware/toggle_element_visibility" class_name="ToggleElementVisibility">
+        ToggleElementVisibility();
+</%static:require_module_async>
+<%static:require_module_async module_name="js/courseware/course_info_events" class_name="CourseInfoEvents">
+        CourseInfoEvents();
+</%static:require_module_async>
+
+<%block name="bodyclass">view-in-course view-course-info ${course.css_class or ''}</%block>
+<script src="${static.url('js/rocket_chat_discussion.js')}"></script>
+
+<main id="main" aria-label="Content" tabindex="-1">
+  <div class="container"
+    % if getattr(course, 'language'):
+      lang="${course.language}"
+    % endif
+    >
+      <div class="course-view page-content-container">
+        <div class="page-header">
+          <h2 class="hd hd-3 page-title">
+            ${_("Chat")}
+          </h2>
+        </div>
+      <div class="page-content">
+        % if user.is_authenticated() and rocket_chat_error_message is None:
+          % if user.is_staff:
+            <div class="page-content-nav rocket-chat-options">
+              <a href="#main">
+                <span class="icon fa fa-eye" ></span>
+                ${_("Chat")}
+              </a>
+
+              <a href="#settings">
+                <span class="icon fa fa-cog" ></span>
+                ${_("Settings")}
+              </a>
+            </div>
+
+            <div class="page-content-secondary rocket-chat-view">
+              <h2>${_("Edit Memberships")}</h2>
+              <input class="rocket-chat-user-input" list='users'placeholder='Username'><datalist id='users'>
+                % for user_enrolled in users_enrolled:
+                  <option>${user_enrolled}</option>
+                %endfor
+              </datalist><br><br>
+              <a class="btn btn-primary change-role-rocketchat">${_("Change Role to Coach")}</a>
+            </div>
+          %endif
+          <div class="page-content-main rocket-chat-view">
+            <iframe class="rocket-chat-view" src="${rocket_chat_url}/home?authToken=${rocket_chat_data['authToken']}&userId=${rocket_chat_data['userId']}" allow="camera; microphone"></iframe>
+          </div>
+        % else:
+          <h1 class="rocket_chat_error_message">${rocket_chat_error_message}</h1>
+        % endif
+        </div>
+      </div>
+  </div>
+</main>
+
+% if user.is_staff:
+   <script >
+       new RocketChatNavigation ('${reverse('rocketchat:api:v0:rocket_chat_change_role')}');
+   </script>
+% endif
+
+<script >
+    new RocketChatLogout('${reverse('rocketchat:api:v0:rocket_chat_clean_token_cache')}', '${beacon_rc}');
+</script

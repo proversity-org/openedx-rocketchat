@@ -1,0 +1,25 @@
+.page-content-main.rocket-chat-view {
+    padding: 10px;
+}
+
+.page-content-secondary.rocket-chat-view {
+    padding: 10px;
+}
+
+.page-content-main.rocket-chat-view iframe{
+    width: 100%;
+    height: 500px;
+    border: none;
+}
+
+.page-content-secondary.rocket-chat-view{
+    display: none;
+}
+
+.page-content-nav.rocket-chat-options {
+    padding: 13px;
+}
+
+.page-content-nav.rocket-chat-options a{
+    padding-left: 10px;
+}
