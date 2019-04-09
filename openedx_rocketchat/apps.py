@@ -23,6 +23,7 @@ class OpenEdxRocketChatExtensionConfig(AppConfig):
             'lms.djangoapp': {
                 'common': {'relative_path': 'settings.common'},
                 'aws': {'relative_path': 'settings.aws'},
+                'production': {'relative_path': 'settings.production'},
             },
         },
     }

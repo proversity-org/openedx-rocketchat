@@ -1,12 +1,13 @@
-import waffle
+"""
+Rocketchat tab file
+"""
 
+from courseware.tabs import EnrolledTab  # pylint: disable=import-error
 from django.utils.translation import ugettext_noop
-
-from courseware.tabs import EnrolledTab
 from openedx.core.djangoapps.site_configuration import helpers as configuration_helpers
 
 
-class RocketChatTab(EnrolledTab):
+class RocketChatTab(EnrolledTab):  # pylint: disable=too-few-public-methods
     """
     The representation of the course rocketchat view type.
     """
@@ -23,7 +24,7 @@ class RocketChatTab(EnrolledTab):
         """
         is_enabled = configuration_helpers.get_value(
             'ENABLE_ROCKET_CHAT_SERVICE',
-            waffle.switch_is_active('rocket_chat_tab')
+            course.other_course_settings.get('enable_rocketchat_tab')
         )
         is_enrolled = super(RocketChatTab, cls).is_enabled(course, user)
         return is_enabled and is_enrolled

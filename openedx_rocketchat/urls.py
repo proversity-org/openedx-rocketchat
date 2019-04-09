@@ -1,9 +1,12 @@
+"""
+Openedx Rocketchat URL configuration.
+"""
+from django.conf import settings
+from django.conf.urls import include, url
+
 from .views import rocket_chat_discussion
 
-from django.conf import settings
-from django.conf.urls import url, include
-
-urlpatterns = [
+urlpatterns = [  # pylint: disable=invalid-name
     url(
         r'^api/',
         include('openedx_rocketchat.api.urls', namespace='api'),

@@ -82,10 +82,10 @@ from openedx.core.djangolib.markup import HTML, Text
 
 % if user.is_staff:
    <script >
-       new RocketChatNavigation ('${reverse('rocketchat:api:v0:rocket_chat_change_role')}');
+       rocketChatNavigation('${reverse('rocketchat:api:v0:rocket_chat_change_role')}');
    </script>
 % endif
 
 <script >
-    new RocketChatLogout('${reverse('rocketchat:api:v0:rocket_chat_clean_token_cache')}', '${beacon_rc}');
+    rocketChatLogout('${reverse('rocketchat:api:v0:rocket_chat_clean_token_cache')}', '${beacon_rc}');
 </script

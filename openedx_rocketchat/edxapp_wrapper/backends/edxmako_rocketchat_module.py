@@ -1,5 +1,6 @@
 """ Backend abstraction """
 import os
+
 import edxmako  # pylint: disable=import-error
 import openedx_rocketchat
 

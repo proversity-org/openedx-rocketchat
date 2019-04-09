@@ -1,37 +1,47 @@
+"""
+Openedx RocketChat Api Views.
+"""
 import logging
 
 from django.core.cache import cache
-
+from openedx_rocketchat.utils import (
+    create_token, get_rocket_chat_settings,
+    get_course_from_string,
+    get_subscriptions_rids,
+    initialize_api_rocket_chat,
+    logout,
+)
+from rest_framework import permissions, status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import permissions
-from rest_framework import status
 
-from openedx_rocketchat.edxapp_wrapper.get_opaque_keys import get_course_from_string
-
-from openedx_rocketchat.utils import (
-    get_rocket_chat_settings,
-    initialize_api_rocket_chat,
-    get_subscriptions_rids,
-    logout,
-    create_token,
+from .serializers import (
+    RocketChatChangeRoleSerializer,
+    RocketChatCredentialsSerializer,
+    RocketChatSubscriptionsIdSerializer
 )
-from .serializers import *
 
 LOG = logging.getLogger(__name__)
 
 
 class RocketChatCredentials(APIView):
+    """
+    This class allows to get rocketchat credentials based on the edx user.
+    """
 
     authentication_classes = (
         SessionAuthentication,
     )
     permission_classes = (permissions.IsAuthenticated,)
 
-    def get(self, request):
+    def get(self, request):  # pylint: disable=no-self-use
         """
         Get rocketchat user credentials in order to use rocketchat methods outside the server.
+
+        **Query params**
+
+            courseId: Unique identifier for every course
 
         **Example Requests**:
 
@@ -88,13 +98,16 @@ class RocketChatCredentials(APIView):
 
 
 class RocketChatSubscriptionsId(APIView):
+    """
+    Class that allows to get the id for every subscription.
+    """
 
     authentication_classes = (
         SessionAuthentication,
     )
     permission_classes = (permissions.IsAuthenticated,)
 
-    def get(self, request):
+    def get(self, request):  # pylint: disable=no-self-use
         """
         Retrieve the rooms' id for every user subscription.
 
@@ -126,19 +139,21 @@ class RocketChatSubscriptionsId(APIView):
 
         except Exception as error:
             LOG.error("Rocketchat Subscriptions couldn't be got due to %s", error)
-            pass
 
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class RocketChatChangeRole(APIView):
+    """
+    Class that allows to change the role for a given user.
+    """
 
     authentication_classes = (
         SessionAuthentication,
     )
     permission_classes = (permissions.IsAuthenticated,)
 
-    def post(self, request):
+    def post(self, request):  # pylint: disable=no-self-use
         """
         This methods allows to change the rocketchat role for a specific user
 
@@ -153,16 +168,18 @@ class RocketChatChangeRole(APIView):
 
         **Response Values**:
 
-            * It doesn't return data
+            * It doesn't return data on successful.
+            * {"error": "error reason"} on fail by  400.
 
         """
         if not request.user.is_staff:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
         serializer = RocketChatChangeRoleSerializer(data=request.data)
 
         if not serializer.is_valid():
-            return Response("Data is not valid", status=status.HTTP_400_BAD_REQUEST)
+            error_message = {"error": "Data is not valid"}
+            return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
 
         username = serializer.data["username"]
         role = serializer.data["role"]
@@ -178,31 +195,36 @@ class RocketChatChangeRole(APIView):
             try:
                 user_info = user_info.json()
                 if not user_info.get('success', False):
-                    return Response(user_info.get("error"), status=status.HTTP_400_BAD_REQUEST)
+                    error_message = {"error": user_info.get("error")}
+                    return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
 
                 user = user_info.get("user")
                 data = {"roles": [role]}
                 response = api_rocket_chat.users_update(user.get("_id"), **data)
                 if response.status_code == 200:
                     return Response(status=status.HTTP_204_NO_CONTENT)
-                return Response(response.json().get("error"), status=status.HTTP_400_BAD_REQUEST)
+
+                error_message = {"error": response.json().get("error")}
+                return Response(error_message, status=status.HTTP_400_BAD_REQUEST)
 
             except AttributeError:
                 LOG.error("Rocketchat API can not get the user information")
-                return Response(status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
         LOG.error("Rocketchat API object can not be initialized")
         return Response(status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
 
 class RocketChatCleanToken(APIView):
+    """
+    Clean cache and invalidates the stored token.
+    """
 
     authentication_classes = (
         SessionAuthentication,
     )
     permission_classes = (permissions.IsAuthenticated,)
 
-    def get(self, request):
+    def get(self, request):  # pylint: disable=no-self-use
         """
         Invalidate the rocketchat user data store on the server.
 
@@ -230,4 +252,4 @@ class RocketChatCleanToken(APIView):
                 cache.delete(key)
                 return Response(status=status.HTTP_202_ACCEPTED)
 
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
+        return Response(status=status.HTTP_400_BAD_REQUEST)

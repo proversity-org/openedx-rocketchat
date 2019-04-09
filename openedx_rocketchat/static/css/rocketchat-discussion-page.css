@@ -23,3 +23,13 @@
 .page-content-nav.rocket-chat-options a{
     padding-left: 10px;
 }
+
+.rocket-chat-user-input {
+    width: 20%;
+    border: 1px solid darkgray;
+    border-radius: 10px;
+}
+
+.change-role-rocketchat {
+    margin: 0;
+}
