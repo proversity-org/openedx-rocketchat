@@ -110,9 +110,9 @@ def initialize_api_rocket_chat(rocket_chat_settings):
 
     try:
         api_rocket_chat = ApiRocketChat(
-            admin_user,
-            admin_pass,
-            url_service
+            user=admin_user,
+            password=admin_pass,
+            server_url=url_service,
         )
     except RocketAuthenticationException:
         LOG.error('ApiRocketChat error: RocketAuthenticationException')

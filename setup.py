@@ -22,7 +22,7 @@ setup(
         ],
     },
     install_requires=[
-        'rocketchat_API==0.6.21',
+        'rocketchat_API==0.6.34',
         'edx-opaque-keys==0.4.4'
     ],
 )
