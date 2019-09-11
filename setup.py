@@ -3,7 +3,7 @@
 Setup file for openedx-rocketchat Django plugin.
 """
 from distutils.core import setup
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 setup(
     name='openedx-rocketchat',
