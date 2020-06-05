@@ -1,4 +1,4 @@
-Django==1.11.15
+Django==3.0.7
 edx-opaque-keys==0.4.4
 pylint==1.9.3
 pycodestyle==2.4.0
